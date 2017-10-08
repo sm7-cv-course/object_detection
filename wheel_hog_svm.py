@@ -2,16 +2,25 @@ import cv2
 import numpy as np
 import glob
 import sys
+import argparse
 import matplotlib.pyplot as plt
 from common import SVM, get_hog
 
-COMMON_W = 20
-COMMON_H = 20
+COMMON_W = 48
+COMMON_H = 48
 CLASSES_N = 1
 
 # Paths to images
-path_to_images_wheels = './learn_data/wheels/objs/*.png'
-path_to_images_backs = './learn_data/wheels/backs/*.png'
+# Construct the argument parser and parse the arguments
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-p", "--positive", required=True, help="Path to the image")
+# ap.add_argument("-n", "--negative", required=True, help="Path to the image")
+# ap.add_argument("-m", "--model", required=True, help="Trained classifier params name")
+# args = vars(ap.parse_args())
+# path_to_images_wheels = './learn_data/wheels/objs/*.png'
+path_to_images_wheels = 'D:\\hackathon\\hack_cv17\\data\\rtsd-r1\\rtsd-r1\\test\\*.png'
+# path_to_images_backs = './learn_data/wheels/backs/*.png'
+path_to_images_backs = 'D:\\hackathon\\hack_cv17\\data\\not_signes\\*.png'
 
 def read_all_images(dirname):
     files=glob.glob(dirname)
@@ -91,7 +100,7 @@ model = SVM()
 model.train(hog_descriptors_train, labels_train)
 
 print('Saving SVM model ...')
-model.save('seal_svm.dat')
+model.save('signs_svm_48.dat')
 
 # Test SVM classifier
 vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)

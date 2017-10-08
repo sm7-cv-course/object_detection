@@ -2,20 +2,22 @@ import cv2
 import numpy as np
 
 def get_hog() :
-    winSize = (20,20)
-    blockSize = (8,8)
-    blockStride = (4,4)
+    winSize = (48,48)
+    blockSize = (16,16)
+    blockStride = (8,8)
     cellSize = (8,8)
     nbins = 9
     derivAperture = 1
-    winSigma = -1.
+    winSigma = -cv2.DEFAULT_WIN_SIGMA
     histogramNormType = 0
     L2HysThreshold = 0.2
     gammaCorrection = 1
-    nlevels = 64
+    nlevels = cv2.DEFAULT_NLEVELS
     signedGradient = True
 
-    hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,derivAperture,winSigma,histogramNormType,L2HysThreshold,gammaCorrection,nlevels,signedGradient)
+    hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, \
+             nbins, derivAperture, winSigma, histogramNormType, L2HysThreshold, \
+             gammaCorrection, nlevels, signedGradient)
 
     return hog
     affine_flags = cv2.WARP_INVERSE_MAP|cv2.INTER_LINEAR

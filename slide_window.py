@@ -22,7 +22,7 @@ image_orig = cv2.imread(args["image"])
 img_gray = cv2.cvtColor(image_orig, cv2.COLOR_RGBA2GRAY)
 
 # Define the window width and height
-(winW, winH) = (20, 20)
+(winW, winH) = (48, 48)
 
 # Load pretrained classifier
 model = SVM()
@@ -46,7 +46,7 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
 
         hog_descriptor = hog.compute(window)
         hog_descriptor = np.squeeze(hog_descriptor)
-        hog_descriptor = np.reshape(hog_descriptor,(1,hog_descriptor.shape[0]))
+        hog_descriptor = np.reshape(hog_descriptor, (1, hog_descriptor.shape[0]))
         # hog_descriptor = np.concatenate(hog_descriptor,hog_descriptor)
         one_resp = model.predict(hog_descriptor)
         if one_resp == 1:
