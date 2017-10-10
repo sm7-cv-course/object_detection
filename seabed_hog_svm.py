@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import glob
 import sys
+import argparse
 import matplotlib.pyplot as plt
 from common import SVM, get_hog
 
@@ -10,9 +11,16 @@ COMMON_W = 20
 COMMON_H = 20
 CLASSES_N = 1
 
-# Paths to images
-path_to_images_wheels = './learn_data/seabed/starboard/*.png'
-path_to_images_backs = './learn_data/seabed/not_seabed/*.png'
+# Construct the argument parser and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-p", "--positive", required=True, help="Path to the images with objects.")
+ap.add_argument("-n", "--negative", required=True, help="Path to the images with negative class.")
+ap.add_argument("-m", "--model", required=True, help="Trained classifier params.")
+args = vars(ap.parse_args())
+
+# Paths to images for learning
+path_to_images_positive = args["positive"] + '/*.png'
+path_to_images_negative = args["negative"] + '/*.png'
 
 
 def read_all_images(dirname):
@@ -55,8 +63,8 @@ def evaluate_model( model, objects, samples, labels ):
 
 
 # Read dataset
-images_obj = read_all_images(path_to_images_wheels)
-images_backs = read_all_images(path_to_images_backs)
+images_obj = read_all_images(path_to_images_positive)
+images_backs = read_all_images(path_to_images_negative)
 
 # Normalize images (both train and test sets):
 # 1) bring to common size
@@ -95,7 +103,7 @@ model = SVM()
 model.train(hog_descriptors_train, labels_train)
 
 print('Saving SVM model ...')
-model.save('seabed_svm.dat')
+model.save(args["model"])
 
 # Test SVM classifier
 vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)
