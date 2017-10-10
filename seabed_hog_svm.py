@@ -1,20 +1,16 @@
-#/usr/bin/python3.4
 import cv2
 import numpy as np
 import glob
-import sys
 import argparse
-import matplotlib.pyplot as plt
 from common import SVM, get_hog
 
-COMMON_W = 20
-COMMON_H = 20
-CLASSES_N = 1
+COMMON_W = 24
+COMMON_H = 24
 
 # Construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--positive", required=True, help="Path to the images with objects.")
-ap.add_argument("-n", "--negative", required=True, help="Path to the images with negative class.")
+ap.add_argument("-p", "--positive", required=True, help="Path to '*.png' images with objects.")
+ap.add_argument("-n", "--negative", required=True, help="Path to '*.png' the images with negative class.")
 ap.add_argument("-m", "--model", required=True, help="Trained classifier params.")
 args = vars(ap.parse_args())
 
