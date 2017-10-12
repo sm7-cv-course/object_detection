@@ -21,7 +21,7 @@ image_orig = cv2.imread(args["image"])
 img_gray = cv2.cvtColor(image_orig, cv2.COLOR_RGBA2GRAY)
 
 # Define the window width and height
-(winW, winH) = (24, 24)
+(winW, winH) = (20, 20)
 
 # Load pretrained classifier
 model = SVM()

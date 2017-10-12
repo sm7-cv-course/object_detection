@@ -2,7 +2,7 @@ import cv2
 
 
 def get_hog():
-    winSize = (24, 24)
+    winSize = (20, 20)
     blockSize = (8, 8)
     blockStride = (4, 4)
     cellSize = (8, 8)

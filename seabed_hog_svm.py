@@ -4,8 +4,8 @@ import glob
 import argparse
 from common import SVM, get_hog
 
-COMMON_W = 24
-COMMON_H = 24
+COMMON_W = 20
+COMMON_H = 20
 
 # Construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -20,7 +20,7 @@ path_to_images_negative = args["negative"] + '/*.png'
 
 
 def read_all_images(dirname):
-    files=glob.glob(dirname)
+    files = glob.glob(dirname)
     vec_of_images = []
     for file in files:
         img = cv2.imread(file)
@@ -50,7 +50,6 @@ def evaluate_model( model, objects, samples, labels ):
 
     vis = []
     for img, flag in zip(objects, resp == labels):
-        # img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
         if not flag:
             img[..., :2] = 0
 
@@ -77,7 +76,7 @@ rand = np.random.RandomState(10)
 shuffle = rand.permutation(len(images_list_norm))
 images, labels = np.asarray(images_list_norm)[shuffle], labels[shuffle]
 
-# Set HOG parameters
+# Get HOG parameters
 hog = get_hog()
 
 # Compute HOG descriptors for each image
