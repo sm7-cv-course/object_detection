@@ -1,0 +1,5 @@
+*.dat
+__pycache__
+.idea
+rezults
+
