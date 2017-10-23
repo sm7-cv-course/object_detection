@@ -5,8 +5,9 @@ import cv2
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 from common import SVM, get_hog
-sys.path.insert(0, './../dat')
+# sys.path.insert(0, './../dat')
 
 COMMON_W = 20
 COMMON_H = 20
@@ -24,6 +25,12 @@ args = vars(ap.parse_args())
 path_to_images_positive = args["positive"] + '/*.png'
 path_to_images_negative = args["negative"] + '/*.png'
 
+
+def std_scaler(X):
+    """
+    
+    """
+    # x = (x - x.mean()) /
 
 def read_all_images(dirname):
     files = glob.glob(dirname)
@@ -77,12 +84,12 @@ def compute_hog(hog, imgs):
 
 
 def compute_HOGs(path_to_images_positive, path_to_images_negative):
-	"""
-	Computes HOGs for given paths to positive and negative samples.
-	:param path_to_images_positive: path to positive sample;
+    """
+    Computes HOGs for given paths to positive and negative samples.
+    :param path_to_images_positive: path to positive sample;
     :param path_to_images_negative: path to negative sample;
     :return: zip(labels, hogs).
-	"""
+    """
     # If HOGs are precomputed load them
     # Read table {labels, HOG features} from saved in advance file.
     table_path = args["table"]
@@ -91,9 +98,9 @@ def compute_HOGs(path_to_images_positive, path_to_images_negative):
 
     print("Load table {labels, features}...")
     try:
-	    with open(table_path, 'rb') as f:
-		    # List of tuples.
-		    table = pickle.load(f)
+        with open(table_path, 'rb') as f:
+            # List of tuples.
+            table = pickle.load(f)
     except:
         table = None
 
@@ -138,6 +145,13 @@ table = compute_HOGs(path_to_images_positive, path_to_images_negative)
 Labels, Features = zip(*table)
 Labels = np.array(Labels)
 Features = np.array(Features)
+
+sc = StandardScaler()
+sc.fit(Features)
+Features = sc.transform(Features)
+with open('std_scaler', 'wb') as f:
+    pickle.dump(sc, f)
+    f.close()
 
 # Divide all features to train and test sets
 get_indexes = lambda x, xs: [i for (y, i) in zip(xs, range(len(xs))) if x == y]

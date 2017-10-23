@@ -11,8 +11,8 @@ import numpy as np
 # from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 import pickle
+from sklearn.preprocessing import StandardScaler
 from common import SVM, get_hog
-
 sys.path.insert(0, './../pyimagesearch')
 from helpers import pyramid
 from helpers import sliding_window
@@ -60,6 +60,8 @@ if table_path is None:
 print("Load table {eigenvalues, eigenvectors}...")
 with open(table_path, 'rb') as f:
     table = pickle.load(f)
+    f.close()
+
 eigenvalues, eigenvectors = zip(*table)
 # eigenvalues = np.array(eigenvalues)
 eigenvectors = np.array(eigenvectors)
@@ -67,6 +69,12 @@ eigenvectors = np.array(eigenvectors)
 # Loop over the image pyramid.
 dwnsmpl_scale = 1.5
 cur_scale = 1
+# sc = StandardScaler()
+with open('std_scaler', 'rb') as f:
+    sc = pickle.load(f)
+    f.close()
+
+print("Pyramid slide window search...")
 for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
     # Loop over the sliding window for each layer of the pyramid
     for (x, y, window) in sliding_window(resized, stepSize=2, windowSize=(winW, winH)):
@@ -77,6 +85,9 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
         # MACHINE LEARNING CLASSIFIER TO CLASSIFY THE CONTENTS OF THE WINDOW
 
         hog_descriptor = hog.compute(window)
+        # Standardize to training dataset parameters.
+        hog_descriptor = sc.transform(hog_descriptor.T)
+
         hog_descriptor = np.squeeze(hog_descriptor)
         hog_descriptor = np.reshape(hog_descriptor, (1, hog_descriptor.shape[0]))
         hog_descriptor = (hog_descriptor.dot(eigenvectors[0:len(eigenvalues)].T)).astype(np.float32)
