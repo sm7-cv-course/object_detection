@@ -26,11 +26,17 @@ path_to_images_positive = args["positive"] + '/*.png'
 path_to_images_negative = args["negative"] + '/*.png'
 
 
-def std_scaler(X):
+def std_scaler_fit(X):
     """
-    
+    z = (xi - M(x)) / sigma,
+    M(x) - Expected value,
+    sigma - Std deviation.
+    :param X: input dataset;
+    :return: transformed data set z, mean value, std deviation.
     """
-    # x = (x - x.mean()) /
+    z = (X - X.mean()) / X.var()
+    return z, X.mean(), X.var()
+
 
 def read_all_images(dirname):
     files = glob.glob(dirname)
@@ -52,7 +58,7 @@ def normalize_images(images):
 
 def evaluate_model(model, samples, labels):
     """
-	Model evaluation.
+    Model evaluation.
     """
     resp = model.predict(samples)
     err = (labels != resp).mean()
@@ -146,12 +152,12 @@ Labels, Features = zip(*table)
 Labels = np.array(Labels)
 Features = np.array(Features)
 
-sc = StandardScaler()
-sc.fit(Features)
-Features = sc.transform(Features)
-with open('std_scaler', 'wb') as f:
-    pickle.dump(sc, f)
-    f.close()
+# sc = StandardScaler()
+# sc.fit(Features)
+# Features = sc.transform(Features)
+# with open('std_scaler', 'wb') as f:
+#     pickle.dump(sc, f)
+#     f.close()
 
 # Divide all features to train and test sets
 get_indexes = lambda x, xs: [i for (y, i) in zip(xs, range(len(xs))) if x == y]

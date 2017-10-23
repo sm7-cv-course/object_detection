@@ -27,6 +27,18 @@ ap.add_argument("-o", "--pca", required=False,
     help="File with table containing calculated PCA parameters, used in training process.")
 args = vars(ap.parse_args())
 
+
+def std_scaler_transform(X, mean, sigma):
+    """
+    Apply std scaling parameters.
+    :param X: input dataset;
+    :param mean: center; 
+    :param sigma: std deviation;
+    :return: transformed data set.
+    """
+    return (X - mean) / sigma
+
+
 # Load testing image.
 image_orig = cv2.imread(args["image"])
 img_gray = cv2.cvtColor(image_orig, cv2.COLOR_RGBA2GRAY)
@@ -70,9 +82,9 @@ eigenvectors = np.array(eigenvectors)
 dwnsmpl_scale = 1.5
 cur_scale = 1
 # sc = StandardScaler()
-with open('std_scaler', 'rb') as f:
-    sc = pickle.load(f)
-    f.close()
+# with open('std_scaler', 'rb') as f:
+#     sc = pickle.load(f)
+#     f.close()
 
 print("Pyramid slide window search...")
 for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
@@ -86,7 +98,7 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
 
         hog_descriptor = hog.compute(window)
         # Standardize to training dataset parameters.
-        hog_descriptor = sc.transform(hog_descriptor.T)
+        # hog_descriptor = sc.transform(hog_descriptor.T)
 
         hog_descriptor = np.squeeze(hog_descriptor)
         hog_descriptor = np.reshape(hog_descriptor, (1, hog_descriptor.shape[0]))
@@ -102,7 +114,7 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
 
 # End time measurement.
 e2 = cv2.getTickCount()
-time = (e2 - e1)/ cv2.getTickFrequency()
+time = (e2 - e1) / cv2.getTickFrequency()
 print("Detection process time = ", time)
 
 plt.imshow(img_gray)
