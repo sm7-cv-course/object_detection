@@ -1,6 +1,6 @@
-'''
+"""
 Train binary classifier from Keras framework.
-'''
+"""
 
 from __future__ import print_function
 import keras
@@ -40,6 +40,7 @@ path_to_images_negative = args["negative"] + '/*.png'
 model_name = args["model"]
 print("model_name = ", model_name)
 
+
 def read_all_images(dirname):
     files = glob.glob(dirname)
     vec_of_images = []
@@ -54,7 +55,10 @@ def normalize_images(images):
     for img in images:
         if img is not None:
             img_norm = cv2.resize(img, (COMMON_W, COMMON_H), interpolation=cv2.INTER_CUBIC)
-            images_norm.append(img_norm)
+            img_gray = cv2.cvtColor(img_norm, cv2.COLOR_RGBA2GRAY)
+            # img_grey_triplet = (img_gray, img_gray, img_gray)
+            img_grey_triplet = cv2.merge((img_gray, img_gray, img_gray))
+            images_norm.append(img_grey_triplet)
     return images_norm
 
 
@@ -103,7 +107,8 @@ model.add(Dense(num_classes))
 model.add(Activation('softmax'))
 
 # initiate RMSprop optimizer
-opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
+# opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
+opt = keras.optimizers.rmsprop(lr=0.001, decay=1e-8)
 
 # Let's train the model using RMSprop
 print("Compile model.")
@@ -127,15 +132,15 @@ else:
     print('Using real-time data augmentation.')
     # This will do preprocessing and realtime data augmentation:
     datagen = ImageDataGenerator(
-        featurewise_center=False,  # Set input mean to 0 over the dataset.
-        samplewise_center=False,  # Set each sample mean to 0.
-        featurewise_std_normalization=False,  # Divide inputs by std of the dataset.
-        samplewise_std_normalization=False,  # Divide each input by its std.
+        featurewise_center=True,  # Set input mean to 0 over the dataset.
+        samplewise_center=True,  # Set each sample mean to 0.
+        featurewise_std_normalization=True,  # Divide inputs by std of the dataset.
+        samplewise_std_normalization=True,  # Divide each input by its std.
         zca_whitening=False,  # Apply ZCA whitening (Mahalanobis).
         rotation_range=0,  # Randomly rotate images in the range (degrees, 0 to 180).
         width_shift_range=0.1,  # Randomly shift images horizontally (fraction of total width).
         height_shift_range=0.1,  # Randomly shift images vertically (fraction of total height).
-        horizontal_flip=True,  # Randomly flip images.
+        horizontal_flip=False,  # Randomly flip images.
         vertical_flip=False)  # Randomly flip images.
 
     # Compute quantities required for feature-wise normalization
@@ -143,7 +148,7 @@ else:
     datagen.fit(x_train)
 
     # Write ImageDataGenerator parameters.
-    ImgDataGenerator_path = 'datagen.dat'
+    ImgDataGenerator_path = 'datagen_grey.dat'
     with open(ImgDataGenerator_path, 'wb') as f:
         pickle.dump(datagen, f)
 
