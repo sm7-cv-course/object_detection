@@ -16,21 +16,23 @@ ap.add_argument("-i", "--image", required=True, help="Path to the image.")
 ap.add_argument("-m", "--model", required=True, help="'.dat' file with trained classifier params.")
 args = vars(ap.parse_args())
 
-# Load the image and trained classifier
+# Load the image and trained classifier.
 image_orig = cv2.imread(args["image"])
-img_gray = cv2.cvtColor(image_orig, cv2.COLOR_RGBA2GRAY)
+dwnsmpl_rate = 0.25
+img_dwnsmpl = cv2.resize(image_orig, None, fx=dwnsmpl_rate, fy=dwnsmpl_rate, interpolation=cv2.INTER_NEAREST)
+img_gray = cv2.cvtColor(img_dwnsmpl, cv2.COLOR_RGBA2GRAY)
 
-# Define the window width and height
+# Define the window width and height.
 (winW, winH) = (20, 20)
 
-# Load pretrained classifier
+# Load pretrained classifier.
 model = SVM()
 model.load(args["model"])
 
-# Initialize the HOG descriptor/person detector
-hog = get_hog();
+# Initialize the HOG descriptor/person detector.
+hog = get_hog()
 
-# Loop over the image pyramid
+# Loop over the image pyramid.
 dwnsmpl_scale = 1.5
 cur_scale = 1
 for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
