@@ -32,6 +32,8 @@ def read_all_images(dirname):
     vec_of_images = []
     vec_of_filenames = []
     for file in files:
+        if file.find("flip") != -1:
+            continue
         img = cv2.imread(file)
         vec_of_images.append(img)
         vec_of_filenames.append(file)
@@ -41,18 +43,12 @@ def read_all_images(dirname):
 # Read all images
 images_dict = read_all_images(args['images'] + '/*.png')
 
-vert = False
-hor = False
+# Default - 'hv'
 flip = -1
 if args['mirror'] == 'v':
-    vert = True
     flip = 1
 elif args['mirror'] == 'h':
-    hor = True
     flip = 0
-else:
-    hor = True
-    ver = True
 
 for (key, value) in images_dict:
     # Flip image.

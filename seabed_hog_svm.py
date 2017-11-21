@@ -2,19 +2,25 @@ import cv2
 import numpy as np
 import glob
 import argparse
+import sklearn
+from sklearn.preprocessing import StandardScaler as skStandardScaler
+import pickle
+import matplotlib.pyplot as plt
 from common import SVM, get_hog
+from mathlib.standardization import pyStandardScaler
 
 COMMON_W = 20
 COMMON_H = 20
+MAX_SET_SIZE = 10000
 
-# Construct the argument parser and parse the arguments
+# Construct the argument parser and parse the arguments.
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--positive", required=True, help="Path to '*.png' images with objects.")
 ap.add_argument("-n", "--negative", required=True, help="Path to '*.png' the images with negative class.")
 ap.add_argument("-m", "--model", required=True, help="Trained classifier params.")
 args = vars(ap.parse_args())
 
-# Paths to images for learning
+# Paths to images for learning.
 path_to_images_positive = args["positive"] + '/*.png'
 path_to_images_negative = args["negative"] + '/*.png'
 
@@ -22,9 +28,14 @@ path_to_images_negative = args["negative"] + '/*.png'
 def read_all_images(dirname):
     files = glob.glob(dirname)
     vec_of_images = []
+    count = 0
     for file in files:
         img = cv2.imread(file)
         vec_of_images.append(img)
+        count = count + 1
+        # Do not load everything.
+        if count > MAX_SET_SIZE:
+            break
     return vec_of_images
 
 
@@ -37,7 +48,7 @@ def normalize_images(images):
     return images_norm
 
 
-def evaluate_model( model, objects, samples, labels ):
+def evaluate_model(model, objects, samples, labels):
     resp = model.predict(samples)
     err = (labels != resp).mean()
     print('Accuracy: %.2f %%' % ((1 - err) * 100))
@@ -76,29 +87,51 @@ rand = np.random.RandomState(10)
 shuffle = rand.permutation(len(images_list_norm))
 images, labels = np.asarray(images_list_norm)[shuffle], labels[shuffle]
 
-# Get HOG parameters
+# Get HOG parameters.
 hog = get_hog()
 
-# Compute HOG descriptors for each image
+# Compute HOG descriptors for each image.
 hog_descriptors = []
 for img in images:
     img_gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
     hog_descriptors.append(hog.compute(img_gray))
 hog_descriptors = np.squeeze(hog_descriptors)
 
-# Split the dataset to train and test_rawdata
+# Split the dataset to train and test_rawdata.
 train_n = int(0.9 * len(hog_descriptors))
 data_train, data_test = np.split(images, [train_n])
 hog_descriptors_train, hog_descriptors_test = np.split(hog_descriptors, [train_n])
 labels_train, labels_test = np.split(labels, [train_n])
 
-# Train SVM classifier
+print("Standardize training and testing sets...")
+sc_skl = skStandardScaler()
+sc_skl.fit(hog_descriptors_train)
+
+hog_descr_train_std = sc_skl.transform(hog_descriptors_train)
+hog_descr_test_std = sc_skl.transform(hog_descriptors_test)
+
+print("Standardize training and testing sets by hand...")
+sc = pyStandardScaler()
+sc.fit_std(hog_descriptors_train)
+hog_descr_train_std_my = sc.standardize(hog_descriptors_train)
+hog_descr_test_std_my = sc.standardize(hog_descriptors_test)
+sc.save('my_sc.dat')
+
+# Write standard scaler to file.
+path_to_sc = 'sc.dat'
+with open(path_to_sc, 'wb') as f:
+    pickle.dump(sc_skl, f)
+
+# Train SVM classifier.
 print('Training SVM model ...')
 model = SVM()
-model.train(hog_descriptors_train, labels_train)
+# model.train(hog_descriptors_train, labels_train)
+# model.train(hog_descr_train_std, labels_train)
+model.train(hog_descr_train_std_my, labels_train)
 
 print('Saving SVM model ...')
 model.save(args["model"])
 
-# Test SVM classifier
-vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)
+# Test SVM classifier.
+# vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)
+vis = evaluate_model(model, data_test, hog_descr_test_std_my, labels_test)
