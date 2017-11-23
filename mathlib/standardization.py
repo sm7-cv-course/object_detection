@@ -3,6 +3,13 @@ import pickle
 
 
 class pyStandardScaler():
+    """
+    Class pyStandardScaler provides methods
+    for classical standardization of data set:
+    x_std = (x - E(x)) / sigma(x)
+    The result was proved by comparison with
+    result of StandardScaler from sklearn.preprocessing.
+    """
     def __init__(self):
         self.__mean = 0
         self.__sigma = 1

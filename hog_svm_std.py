@@ -44,8 +44,6 @@ def normalize_images(images):
     for img in images:
         if img is not None:
             img_norm = cv2.resize(img, (COMMON_W, COMMON_H), interpolation=cv2.INTER_CUBIC)
-            #plt.imshow(img_norm, cmap='gray')
-            #plt.show()
             images_norm.append(img_norm)
     return images_norm
 
@@ -99,41 +97,37 @@ for img in images:
     hog_descriptors.append(hog.compute(img_gray))
 hog_descriptors = np.squeeze(hog_descriptors)
 
+# Compute HOG for positive set only.
+hog_descriptors_positive = []
+for (img, lbl) in zip(images, labels):
+    if lbl == 1:
+        img_gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
+        hog_descriptors_positive.append(hog.compute(img_gray))
+hog_descriptors_positive = np.squeeze(hog_descriptors_positive)
+
 # Split the dataset to train and test_rawdata.
-train_n = int(0.5 * len(hog_descriptors))
+train_n = int(0.9 * len(hog_descriptors))
 data_train, data_test = np.split(images, [train_n])
 hog_descriptors_train, hog_descriptors_test = np.split(hog_descriptors, [train_n])
 labels_train, labels_test = np.split(labels, [train_n])
 
-print("Standardize training and testing sets...")
-sc_skl = skStandardScaler()
-sc_skl.fit(hog_descriptors_train)
-
-hog_descr_train_std = sc_skl.transform(hog_descriptors_train)
-hog_descr_test_std = sc_skl.transform(hog_descriptors_test)
-
 print("Standardize training and testing sets by hand...")
 sc = pyStandardScaler()
 sc.fit_std(hog_descriptors_train)
+# sc.fit_std(hog_descriptors_positive)
 hog_descr_train_std_my = sc.standardize(hog_descriptors_train)
 hog_descr_test_std_my = sc.standardize(hog_descriptors_test)
 sc.save('my_sc.dat')
 
-# Write standard scaler to file.
-path_to_sc = 'sc.dat'
-with open(path_to_sc, 'wb') as f:
-    pickle.dump(sc_skl, f)
-
 # Train SVM classifier.
 print('Training SVM model ...')
 model = SVM()
-model.train(hog_descriptors_train, labels_train)
-# model.train(hog_descr_train_std, labels_train)
-# model.train(hog_descr_train_std_my, labels_train)
+# model.train(hog_descriptors_train, labels_train)
+model.train(hog_descr_train_std_my, labels_train)
 
 print('Saving SVM model ...')
 model.save(args["model"])
 
 # Test SVM classifier.
-vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)
-# vis = evaluate_model(model, data_test, hog_descr_test_std_my, labels_test)
+# vis = evaluate_model(model, data_test, hog_descriptors_test, labels_test)
+vis = evaluate_model(model, data_test, hog_descr_test_std_my, labels_test)

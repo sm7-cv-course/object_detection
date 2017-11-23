@@ -24,9 +24,9 @@ args = vars(ap.parse_args())
 
 def read_all_images(dirname):
     """
-    Read images and create map {falename, image}.
+    Read images and create map {filename, image}.
     :param dirname: directory storing images;
-    :return: dictionary {falename, image}.
+    :return: dictionary {filename, image}.
     """
     files = glob.glob(dirname)
     vec_of_images = []

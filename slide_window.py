@@ -21,7 +21,7 @@ args = vars(ap.parse_args())
 
 # Load the image and trained classifier.
 image_orig = cv2.imread(args["image"])
-dwnsmpl_rate = 0.25
+dwnsmpl_rate = 1
 img_dwnsmpl = cv2.resize(image_orig, None, fx=dwnsmpl_rate, fy=dwnsmpl_rate, interpolation=cv2.INTER_NEAREST)
 img_gray = cv2.cvtColor(img_dwnsmpl, cv2.COLOR_RGBA2GRAY)
 
@@ -60,12 +60,12 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
         # MACHINE LEARNING CLASSIFIER TO CLASSIFY THE CONTENTS OF THE WINDOW
 
         hog_descriptor = hog.compute(window)
-        # hog_descriptor = np.squeeze(hog_descriptor)
-        # hog_descriptor = np.reshape(hog_descriptor, (1, hog_descriptor.shape[0]))
-        # hog_descriptor = sc.transform(hog_descriptor.T)
-        hog_descriptor = my_sc.standardize(hog_descriptor.T)
-        one_resp = model.predict(hog_descriptor)
+        hog_descriptor = np.squeeze(hog_descriptor)
+        hog_descriptor = np.reshape(hog_descriptor, (1, hog_descriptor.shape[0]))
+        # hog_descriptor_std_sk = sc.transform(hog_descriptor.T)
+        hog_descriptor_std = my_sc.standardize(hog_descriptor.T)
         # one_resp = model.predict(hog_descriptor_std)
+        one_resp = model.predict(hog_descriptor)
         if one_resp == 1:
             lup_x = int(x * cur_scale)
             lup_y = int(y * cur_scale)
@@ -74,11 +74,15 @@ for resized in pyramid(img_gray, scale=dwnsmpl_scale, do_pyramid=True):
             cv2.rectangle(img_gray, (lup_x, lup_y), (rbot_x, rbot_y), 255, 2)
     cur_scale *= dwnsmpl_scale
 
-plt.imshow(img_gray)
+plt.imshow(img_gray, cmap='gray')
 plt.show()
 
+
 if args["out"] is not None:
+    # imgname.png
     f_name = args["image"].split('/')[-1]
+    # imgname
     name = f_name.split('.')[0]
+    # path_to_imgname/imgname_rez_std.png
     out_path = args["out"] + '/' + name + '_rez_std.png'
     cv2.imwrite(out_path, img_gray)
